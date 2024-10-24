@@ -19,6 +19,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "UTS_Lec"
+rootProject.name = "ParkTrack"
 include(":app")
  
