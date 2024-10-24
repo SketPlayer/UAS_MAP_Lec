@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "388982122299",
+    "project_id": "uts-map-lec-df755",
+    "storage_bucket": "uts-map-lec-df755.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:388982122299:android:52e9a753124e82093ef91e",
+        "android_client_info": {
+          "package_name": "com.example.uts_lec"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDdjZc60Y2up06W7lacPdERiLpE-ZSt3-g"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
