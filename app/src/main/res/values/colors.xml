@@ -2,4 +2,6 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="primaryBlue">#000F96</color>
+    <color name="primaryBlue80Percent">#99060D4D</color>
 </resources>
