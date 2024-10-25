@@ -8,6 +8,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
+import com.example.uts_lec.MainActivity
 import com.example.uts_lec.data.firebase.FirebaseHelper
 import com.example.uts_lec.data.model.UserModel
 import com.example.uts_lec.databinding.ActivityLoginBinding
@@ -28,16 +29,32 @@ class LoginActivity : AppCompatActivity() {
         enableEdgeToEdge()
         setContentView(binding.root)
 
+        // Check if user is already logged in
+        checkUserLoggedIn()
+
         setListeners()
+    }
+
+    private fun checkUserLoggedIn() {
+        val firebaseAuth = firebaseHelper.getCurrentUser() // Adjust this method based on your FirebaseHelper
+        firebaseAuth?.let { user ->
+            // User is logged in, redirect to ProfileActivity
+            if (user.isEmailVerified) {
+                finishAffinity() // Close all activities
+                val iMain = Intent(this, MainActivity::class.java) // Change to MainActivity
+                startActivity(iMain) // Start MainActivity
+            }
+        }
     }
 
     private fun setListeners() {
         binding.apply {
             btnLogin.setOnClickListener {
                 if (isValid()) {
-                    val userModel = UserModel()
-                    userModel.email = binding.edEmail.text.toString()
-                    userModel.password = binding.edPassword.text.toString()
+                    val userModel = UserModel().apply {
+                        email = binding.edEmail.text.toString()
+                        password = binding.edPassword.text.toString()
+                    }
 
                     lifecycleScope.launch {
                         firebaseHelper.login(userModel).collect { result ->
@@ -48,26 +65,16 @@ class LoginActivity : AppCompatActivity() {
 
                                 is Result.Success -> {
                                     showLoading(false)
-                                    val firebaseAuth = result.data
-                                    firebaseAuth.currentUser?.let { user ->
+                                    val user = result.data.currentUser
+                                    if (user != null) {
                                         if (user.isEmailVerified) {
                                             finishAffinity()
-                                            val iProfile = Intent(
-                                                this@LoginActivity,
-                                                ProfileActivity::class.java
-                                            )
-                                            iProfile.putExtra(ProfileActivity.EXTRA_UID, user.uid)
-                                            startActivity(iProfile)
+                                            val iMain = Intent(this@LoginActivity, MainActivity::class.java) // Change to MainActivity
+                                            startActivity(iMain) // Start MainActivity
                                         } else {
                                             user.sendEmailVerification()
-                                            val iVerif = Intent(
-                                                this@LoginActivity,
-                                                VerificationActivity::class.java
-                                            )
-                                            iVerif.putExtra(
-                                                VerificationActivity.EXTRA_EMAIL,
-                                                userModel.email
-                                            )
+                                            val iVerif = Intent(this@LoginActivity, VerificationActivity::class.java)
+                                            iVerif.putExtra(VerificationActivity.EXTRA_EMAIL, userModel.email)
                                             startActivity(iVerif)
                                         }
                                     }
@@ -90,9 +97,7 @@ class LoginActivity : AppCompatActivity() {
     }
 
     private fun isValid() =
-        if (binding.edEmail.text.isNullOrEmpty() || !Patterns.EMAIL_ADDRESS.matcher(binding.edEmail.text.toString())
-                .matches()
-        ) {
+        if (binding.edEmail.text.isNullOrEmpty() || !Patterns.EMAIL_ADDRESS.matcher(binding.edEmail.text.toString()).matches()) {
             showToast("Isi Email dengan benar!")
             false
         } else if (binding.edPassword.text.isNullOrEmpty()) {
@@ -118,4 +123,3 @@ class LoginActivity : AppCompatActivity() {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
     }
 }
-

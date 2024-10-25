@@ -9,14 +9,18 @@ import android.util.Log
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import com.example.uts_lec.R
 import com.example.uts_lec.data.firebase.FirebaseHelper
 import com.example.uts_lec.data.model.UserModel
 import com.example.uts_lec.databinding.ActivityProfileBinding
+import com.example.uts_lec.CameraActivity
 import com.example.uts_lec.ui.editprofile.EditProfileActivity
+import com.example.uts_lec.MainActivity
 import com.example.uts_lec.ui.splash.SplashActivity
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.ValueEventListener
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import java.io.File
 import java.io.FileOutputStream
 
@@ -31,7 +35,6 @@ class ProfileActivity : AppCompatActivity() {
             if (uri != null) {
                 binding.ivProfile.setImageURI(uri)
                 val base64String = uriToBase64(uri) ?: ""
-
                 firebaseHelper.addImageProfile(extraUID ?: "", base64String)
             }
         }
@@ -40,6 +43,8 @@ class ProfileActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityProfileBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        setupBottomNavigation() // Call the method to set up bottom navigation
 
         firebaseHelper.observeCurrentUser(extraUID ?: "")
             .addValueEventListener(object : ValueEventListener {
@@ -65,6 +70,27 @@ class ProfileActivity : AppCompatActivity() {
             })
 
         setListeners()
+    }
+
+    private fun setupBottomNavigation() {
+        val bottomNavigationView: BottomNavigationView = findViewById(R.id.bottom_navigation)
+        bottomNavigationView.setOnNavigationItemSelectedListener { item ->
+            when (item.itemId) {
+                R.id.nav_home -> {
+                    startActivity(Intent(this, MainActivity::class.java))
+                    true
+                }
+                R.id.nav_camera -> {
+                    startActivity(Intent(this, CameraActivity::class.java))
+                    true
+                }
+                R.id.nav_profile -> {
+                    // Do nothing or refresh the current profile activity
+                    true
+                }
+                else -> false
+            }
+        }
     }
 
     private fun setListeners() {
@@ -110,7 +136,6 @@ class ProfileActivity : AppCompatActivity() {
         return try {
             val file = uriToFile(uri)
             val byteArray = file.readBytes()
-
             Base64.encodeToString(byteArray, Base64.DEFAULT)
         } catch (e: Exception) {
             e.printStackTrace()

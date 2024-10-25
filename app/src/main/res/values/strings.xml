@@ -16,4 +16,5 @@
     <string name="take_photo">Take Photo</string>
     <string name="start_capture">Start Capture</string>
     <string name="stop_capture">Stop Capture</string>
+    <string name="parking_point_text">This is where your parking point\nwill be shown</string>
 </resources>
