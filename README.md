@@ -4,19 +4,19 @@
 
 1. Rio Ferdinan
 (00000070666)
-UI/UX
 
 2. Aryasenna Garnadi
 (00000072229)
-Maps
 
 3. Dennis Kumara
 (00000074796)
-Register & Login
 
 4. Daffi Bintang Firdaus
 (00000073602)
-Kamera
- 
+
+## Deskripsi Aplikasi
+
+Aplikasi pengingat lokasi parkir dengan fitur kamera dan GPS yang merekam lokasi terakhir agar dapat digunakan ketika parkir
+
 ## Link Video
 https://youtu.be/4numFvpr-bU
