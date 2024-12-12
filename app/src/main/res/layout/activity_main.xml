@@ -51,7 +51,8 @@
         android:background="@color/blue"
         app:layout_constraintTop_toBottomOf="@id/track_park_text"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintWidth_percent="0.85" />
 
     <!-- Image View with the question mark -->
     <ImageView
@@ -85,6 +86,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="16dp"
+        android:visibility="gone"
         app:cardElevation="8dp"
         app:cardCornerRadius="12dp"
         app:layout_constraintTop_toBottomOf="@id/divider"
@@ -107,7 +109,7 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"/>
 
-            <!-- Text and Date -->
+            <!-- Date -->
             <TextView
                 android:id="@+id/parking_date"
                 android:layout_width="wrap_content"
@@ -186,11 +188,12 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"/>
 
-            <!-- Image on the Right -->
+            <!-- Image -->
             <ImageView
-                android:id="@+id/right_image"
-                android:layout_width="120dp"
+                android:id="@+id/park_image"
+                android:layout_width="115dp"
                 android:layout_height="115dp"
+                android:contentDescription="@string/parkingimage"
                 android:src="@drawable/ic_image"
                 app:layout_constraintTop_toTopOf="@id/parking_date"
                 app:layout_constraintEnd_toEndOf="parent"

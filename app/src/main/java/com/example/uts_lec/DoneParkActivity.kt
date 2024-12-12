@@ -42,11 +42,13 @@ class DoneParkActivity : AppCompatActivity() {
                     true
                 }
                 R.id.nav_camera -> {
+                    resetParkingStateAndNavigateHome()
                     // Navigate to CameraActivity
                     startActivity(Intent(this, CameraActivity::class.java))
                     true
                 }
                 R.id.nav_profile -> {
+                    resetParkingStateAndNavigateHome()
                     // Handle profile navigation
                     val user = firebaseHelper.getCurrentUser()
                     if (user != null) {

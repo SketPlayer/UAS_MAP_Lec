@@ -12,6 +12,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
+import com.bumptech.glide.Glide
 import com.example.uts_lec.data.firebase.FirebaseHelper
 import com.example.uts_lec.ui.login.LoginActivity
 import com.example.uts_lec.ui.profile.ProfileActivity
@@ -39,6 +40,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
     private lateinit var doneButton: Button
     private lateinit var parkDateNum: TextView
     private lateinit var parkTimeNum: TextView
+    private lateinit var parkImageView: ImageView
 
     private val firebaseHelper by lazy { FirebaseHelper.getInstance(this) }
     private val auth = FirebaseAuth.getInstance()
@@ -58,6 +60,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
         doneButton = findViewById(R.id.done_button)
         parkDateNum = findViewById(R.id.park_date_num)
         parkTimeNum = findViewById(R.id.park_time_num)
+        parkImageView = findViewById(R.id.park_image)
 
         // Load the map asynchronously
         mapFragment.getMapAsync(this)
@@ -132,6 +135,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
                 val latitude = document.getDouble("latitude")
                 val longitude = document.getDouble("longitude")
                 val timestampLong = document.getLong("timestamp")
+                val imageUrl = document.getString("imageUrl")
 
                 if (timestampLong != null) {
                     // Convert the long timestamp to Date
@@ -147,7 +151,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
                     parkDateNum.text = formattedDate
                     parkTimeNum.text = formattedTime
 
-                    // Debugging UI update
                     Log.d("UI Update", "Formatted Date: $formattedDate")
                     Log.d("UI Update", "Formatted Time: $formattedTime")
                 } else {
@@ -160,6 +163,12 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
                         MarkerOptions().position(parkingLocation).title("Your Parking Spot")
                     )
                     map.moveCamera(CameraUpdateFactory.newLatLngZoom(parkingLocation, 15f))
+
+                    if (imageUrl != null) {
+                        Glide.with(this)
+                            .load(imageUrl)
+                            .into(parkImageView)
+                    }
 
                     questionMarkImage.visibility = View.GONE
                     parkingPointText.visibility = View.GONE

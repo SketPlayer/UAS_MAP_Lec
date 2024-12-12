@@ -27,8 +27,9 @@
     <string name="track_park_text">Track where you park here</string>
     <string name="done_button">Done</string>
     <string name="done_parking">Done parking?</string>
-    <string name="date">12/08/2024</string>
+    <string name="date">DD/MM/yyyy</string>
     <string name="parking_date">Parking Date</string>
-    <string name="time">09:30</string>
+    <string name="time">HH:mm</string>
     <string name="parking_time">Parking Time</string>
+    <string name="parkingimage">ParkingImage</string>
 </resources>
