@@ -27,6 +27,9 @@ android {
                 "proguard-rules.pro"
             )
         }
+        debug {
+            isDebuggable = true
+        }
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
@@ -64,6 +67,7 @@ dependencies {
     implementation (libs.guava)
 
     implementation(libs.firebase.auth.ktx)
+
     implementation(libs.firebase.database.ktx)
     implementation (libs.firebase.storage.ktx)
     implementation (libs.firebase.firestore.ktx)
@@ -83,6 +87,8 @@ dependencies {
     implementation(platform(libs.firebase.bom.v3210))
     implementation(libs.google.firebase.analytics)
     implementation(libs.play.services.maps)
+
+
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

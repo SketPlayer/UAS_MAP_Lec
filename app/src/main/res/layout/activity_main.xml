@@ -79,6 +79,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
+
     <!-- Google Map Fragment -->
     <fragment
         android:id="@+id/map_fragment"
