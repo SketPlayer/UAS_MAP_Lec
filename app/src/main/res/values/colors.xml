@@ -8,4 +8,5 @@
     <color name="primaryBlue80Percent">#99060D4D</color>
     <color name="colorPrimary">#6200EE</color>
     <color name="blue">#0000FF</color>
+    <color name="red">#FF3333</color>
 </resources>

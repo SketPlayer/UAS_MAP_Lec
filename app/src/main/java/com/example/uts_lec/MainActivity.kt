@@ -6,10 +6,12 @@ import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import android.view.View
+import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.cardview.widget.CardView
 import com.example.uts_lec.data.firebase.FirebaseHelper
 import com.example.uts_lec.ui.login.LoginActivity
 import com.example.uts_lec.ui.profile.ProfileActivity
@@ -22,6 +24,9 @@ import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 class MainActivity : AppCompatActivity(), OnMapReadyCallback {
 
@@ -29,7 +34,11 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
     private lateinit var questionMarkImage: ImageView
     private lateinit var parkingPointText: TextView
     private lateinit var mapFragment: SupportMapFragment
+    private lateinit var mapCard: CardView
     private lateinit var map: GoogleMap
+    private lateinit var doneButton: Button
+    private lateinit var parkDateNum: TextView
+    private lateinit var parkTimeNum: TextView
 
     private val firebaseHelper by lazy { FirebaseHelper.getInstance(this) }
     private val auth = FirebaseAuth.getInstance()
@@ -44,7 +53,11 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
         bottomNavigationView = findViewById(R.id.bottom_navigation_home)
         questionMarkImage = findViewById(R.id.question_mark_image)
         parkingPointText = findViewById(R.id.parking_point_text)
+        mapCard = findViewById(R.id.map_card)
         mapFragment = supportFragmentManager.findFragmentById(R.id.map_fragment) as SupportMapFragment
+        doneButton = findViewById(R.id.done_button)
+        parkDateNum = findViewById(R.id.park_date_num)
+        parkTimeNum = findViewById(R.id.park_time_num)
 
         // Load the map asynchronously
         mapFragment.getMapAsync(this)
@@ -108,7 +121,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     private fun showInitialUI() {
-        mapFragment.view?.visibility = View.GONE
+        mapCard.visibility = View.GONE // Hide the CardView containing map and button
         questionMarkImage.visibility = View.VISIBLE
         parkingPointText.visibility = View.VISIBLE
     }
@@ -118,6 +131,29 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
             .addOnSuccessListener { document ->
                 val latitude = document.getDouble("latitude")
                 val longitude = document.getDouble("longitude")
+                val timestampLong = document.getLong("timestamp")
+
+                if (timestampLong != null) {
+                    // Convert the long timestamp to Date
+                    val date = Date(timestampLong) // Convert milliseconds to Date
+
+                    val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+                    val timeFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
+
+                    // Format the date and time
+                    val formattedDate = dateFormat.format(date)
+                    val formattedTime = timeFormat.format(date)
+
+                    parkDateNum.text = formattedDate
+                    parkTimeNum.text = formattedTime
+
+                    // Debugging UI update
+                    Log.d("UI Update", "Formatted Date: $formattedDate")
+                    Log.d("UI Update", "Formatted Time: $formattedTime")
+                } else {
+                    Log.e("MainActivity", "Timestamp is null")
+                }
+
                 if (latitude != null && longitude != null) {
                     val parkingLocation = LatLng(latitude, longitude)
                     map.addMarker(
@@ -125,16 +161,25 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
                     )
                     map.moveCamera(CameraUpdateFactory.newLatLngZoom(parkingLocation, 15f))
 
-                    // Show map UI
-                    mapFragment.view?.visibility = View.VISIBLE
                     questionMarkImage.visibility = View.GONE
                     parkingPointText.visibility = View.GONE
+                    mapCard.visibility = View.VISIBLE
                 }
             }
             .addOnFailureListener { exception ->
                 Log.e("MainActivity", "Failed to fetch parking data", exception)
                 Toast.makeText(this, "Failed to load parking location.", Toast.LENGTH_SHORT).show()
             }
+
+    }
+
+    fun onDoneButtonClick(view: View) {
+        // Show toast message
+        Toast.makeText(this, "Parking session ended.", Toast.LENGTH_SHORT).show()
+
+        // Navigate to DoneParkActivity
+        val intent = Intent(this, DoneParkActivity::class.java)
+        startActivity(intent)
     }
 
     override fun onResume() {
