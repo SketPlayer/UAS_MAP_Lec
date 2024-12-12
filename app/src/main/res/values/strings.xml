@@ -17,4 +17,12 @@
     <string name="start_capture">Start Capture</string>
     <string name="stop_capture">Stop Capture</string>
     <string name="parking_point_text">This is where your parking point\nwill be shown</string>
+    <string name="photo_button">Take Picture</string>
+    <string name="home">Home</string>
+    <string name="park">Park</string>
+    <string name="profile">Profile</string>
+    <string name="parking_session_completed">Parking Finished!</string>
+    <string name="back_to_home">Back to Home</string>
+    <string name="parktrack">PARKTRACK</string>
+    <string name="track_park_text">Track where you park here</string>
 </resources>
