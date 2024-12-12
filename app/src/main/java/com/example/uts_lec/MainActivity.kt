@@ -7,121 +7,155 @@ import android.icu.text.SimpleDateFormat
 import android.location.Location
 import android.os.Build
 import android.os.Bundle
-import android.provider.MediaStore
+
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
+import android.view.View
+import android.widget.ImageView
+import android.widget.TextView
+
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
-import androidx.camera.core.*
-import androidx.camera.lifecycle.ProcessCameraProvider
-import androidx.camera.video.Recorder
-import androidx.camera.video.Recording
-import androidx.camera.video.VideoCapture
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
-import com.example.uts_lec.databinding.ActivityMainBinding
-import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.location.LocationServices
-import com.google.firebase.FirebaseApp
+
+import com.example.uts_lec.data.firebase.FirebaseHelper
+import com.example.uts_lec.ui.login.LoginActivity
+import com.example.uts_lec.ui.profile.ProfileActivity
+import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.GoogleMap
+import com.google.android.gms.maps.OnMapReadyCallback
+import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.storage.FirebaseStorage
-import java.util.Locale
-import java.util.concurrent.ExecutorService
-import java.util.concurrent.Executors
 
-class MainActivity : AppCompatActivity() {
-    private lateinit var viewBinding: ActivityMainBinding
-    private lateinit var firestore: FirebaseFirestore
-    private lateinit var storage: FirebaseStorage
-    private lateinit var fusedLocationClient: FusedLocationProviderClient
-    private var imageCapture: ImageCapture? = null
-    private var videoCapture: VideoCapture<Recorder>? = null
-    private var recording: Recording? = null
+class MainActivity : AppCompatActivity(), OnMapReadyCallback {
 
-    private lateinit var cameraExecutor: ExecutorService
+    private lateinit var bottomNavigationView: BottomNavigationView
+    private lateinit var questionMarkImage: ImageView
+    private lateinit var parkingPointText: TextView
+    private lateinit var mapFragment: SupportMapFragment
+    private lateinit var map: GoogleMap
+
+    private val firebaseHelper by lazy { FirebaseHelper.getInstance(this) }
+    private val auth = FirebaseAuth.getInstance()
+    private val firestore = FirebaseFirestore.getInstance()
+    private var doubleBackToExitPressedOnce = false // Flag to track double back press
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         viewBinding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(viewBinding.root)
 
-        FirebaseApp.initializeApp(this)
-        firestore = FirebaseFirestore.getInstance()
-        storage = FirebaseStorage.getInstance()
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
-        // Request camera permissions
-        if (allPermissionsGranted()) {
-            startCamera()
-        } else {
-            requestPermissions()
-        }
+        // Initialize UI components
+        bottomNavigationView = findViewById(R.id.bottom_navigation_home)
+        questionMarkImage = findViewById(R.id.question_mark_image)
+        parkingPointText = findViewById(R.id.parking_point_text)
+        mapFragment = supportFragmentManager.findFragmentById(R.id.map_fragment) as SupportMapFragment
 
-        // Set up the listeners for take photo button
-        viewBinding.imageCaptureButton.setOnClickListener { takePhoto() }
+        // Load the map asynchronously
+        mapFragment.getMapAsync(this)
 
-        cameraExecutor = Executors.newSingleThreadExecutor()
-    }
-
-    private fun takePhoto() {
-        // Check if imageCapture is initialized
-        if (imageCapture == null) {
-            Toast.makeText(this, "Camera not initialized. Restarting camera...", Toast.LENGTH_SHORT).show()
-            startCamera() // Attempt to reinitialize the camera if not initialized
-            return
-        }
-
-        val name = SimpleDateFormat(FILENAME_FORMAT, Locale.US).format(System.currentTimeMillis())
-        val contentValues = ContentValues().apply {
-            put(MediaStore.MediaColumns.DISPLAY_NAME, name)
-            put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg")
-            if (Build.VERSION.SDK_INT > Build.VERSION_CODES.P) {
-                put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/ParkTrack-Images")
-            }
-        }
-
-        val outputOptions = ImageCapture.OutputFileOptions
-            .Builder(contentResolver, MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues)
-            .build()
-
-        imageCapture!!.takePicture(
-            outputOptions,
-            ContextCompat.getMainExecutor(this),
-            object : ImageCapture.OnImageSavedCallback {
-                override fun onError(exc: ImageCaptureException) {
-                    Log.e(TAG, "Photo capture failed: ${exc.message}", exc)
-                    Toast.makeText(this@MainActivity, "Photo capture failed", Toast.LENGTH_SHORT).show()
+        // Handle bottom navigation
+        bottomNavigationView.setOnItemSelectedListener { item ->
+            when (item.itemId) {
+                R.id.nav_home -> true // Stay on the home page
+                R.id.nav_camera -> {
+                    // Navigate to CameraActivity
+                    startActivity(Intent(this, CameraActivity::class.java))
+                    true
                 }
-
-                override fun onImageSaved(output: ImageCapture.OutputFileResults) {
-                    val savedUri = output.savedUri ?: return
-                    val storageRef = storage.reference.child("images/${name}.jpg")
-                    val uploadTask = storageRef.putFile(savedUri)
-
-                    uploadTask.addOnSuccessListener {
-                        storageRef.downloadUrl.addOnSuccessListener { uri ->
-                            Toast.makeText(this@MainActivity, "Photo uploaded to Firebase Storage", Toast.LENGTH_SHORT).show()
-                            getLocationAndSaveData(uri.toString(), name)
-                        }
-                    }.addOnFailureListener {
-                        Log.e(TAG, "Firebase Storage upload failed: ${it.message}")
-                        Toast.makeText(this@MainActivity, "Failed to upload to Firebase Storage", Toast.LENGTH_SHORT).show()
+                R.id.nav_profile -> {
+                    // Handle profile navigation
+                    val user = firebaseHelper.getCurrentUser()
+                    if (user != null) {
+                        val profileIntent = Intent(this, ProfileActivity::class.java)
+                        profileIntent.putExtra(ProfileActivity.EXTRA_UID, user.uid)
+                        startActivity(profileIntent)
+                    } else {
+                        Toast.makeText(this, "Please log in to access your profile.", Toast.LENGTH_SHORT).show()
+                        startActivity(Intent(this, LoginActivity::class.java))
                     }
                 }
             }
-        )
+
+        }
+
+        // Check and update UI based on parking state
+        updateUIForParkingState()
     }
 
-    private fun getLocationAndSaveData(imageUrl: String, name: String) {
-        if (ActivityCompat.checkSelfPermission(
-                this,
-                Manifest.permission.ACCESS_FINE_LOCATION
-            ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
-                this,
-                Manifest.permission.ACCESS_COARSE_LOCATION
-            ) != PackageManager.PERMISSION_GRANTED
-        ) {
-            requestPermissions()
+    override fun onMapReady(googleMap: GoogleMap) {
+        map = googleMap
+        map.uiSettings.isZoomControlsEnabled = true
+    }
+
+    private fun updateUIForParkingState() {
+        val userUID = auth.currentUser?.uid ?: return
+
+        // Fetch user's parking state from Firestore
+        firestore.collection("users").document(userUID).get()
+            .addOnSuccessListener { document ->
+                val activeParking = document.getBoolean("activeParking") ?: false
+                if (activeParking) {
+                    val parkingID = document.getString("currentParkingID")
+                    if (parkingID != null) {
+                        fetchParkingData(parkingID)
+                    }
+                } else {
+                    // No active parking session
+                    showInitialUI()
+                }
+            }
+            .addOnFailureListener { exception ->
+                Log.e("MainActivity", "Failed to fetch user parking state", exception)
+                Toast.makeText(this, "Failed to load parking status.", Toast.LENGTH_SHORT).show()
+            }
+    }
+
+    private fun showInitialUI() {
+        mapFragment.view?.visibility = View.GONE
+        questionMarkImage.visibility = View.VISIBLE
+        parkingPointText.visibility = View.VISIBLE
+    }
+
+    private fun fetchParkingData(parkingID: String) {
+        firestore.collection("parking_data").document(parkingID).get()
+            .addOnSuccessListener { document ->
+                val latitude = document.getDouble("latitude")
+                val longitude = document.getDouble("longitude")
+                if (latitude != null && longitude != null) {
+                    val parkingLocation = LatLng(latitude, longitude)
+                    map.addMarker(
+                        MarkerOptions().position(parkingLocation).title("Your Parking Spot")
+                    )
+                    map.moveCamera(CameraUpdateFactory.newLatLngZoom(parkingLocation, 15f))
+
+                    // Show map UI
+                    mapFragment.view?.visibility = View.VISIBLE
+                    questionMarkImage.visibility = View.GONE
+                    parkingPointText.visibility = View.GONE
+                }
+            }
+            .addOnFailureListener { exception ->
+                Log.e("MainActivity", "Failed to fetch parking data", exception)
+                Toast.makeText(this, "Failed to load parking location.", Toast.LENGTH_SHORT).show()
+            }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        updateUIForParkingState() // Refresh UI on resume
+    }
+
+    override fun onBackPressed() {
+        if (doubleBackToExitPressedOnce) {
+            super.onBackPressed()
+            finishAffinity() // Exit the app completely
             return
         }
 

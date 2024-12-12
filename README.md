@@ -5,14 +5,14 @@
 1. Rio Ferdinan
 (00000070666)
 
-2. Aryasenna Garnadi
-(00000072229)
-
-3. Dennis Kumara
+2. Dennis Kumara
 (00000074796)
 
-4. Daffi Bintang Firdaus
+3. Daffi Bintang Firdaus
 (00000073602)
+
+4. Aryasenna Garnadi
+(00000072229)
 
 ## Deskripsi Aplikasi
 
