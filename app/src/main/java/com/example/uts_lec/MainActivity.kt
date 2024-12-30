@@ -124,24 +124,31 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private fun enableRealTimeLocation() {
         if (checkLocationPermissions()) {
-            map.isMyLocationEnabled = true
-            fusedLocationClient.lastLocation
-                .addOnSuccessListener { location: Location? ->
-                    if (location != null) {
-                        val userLocation = LatLng(location.latitude, location.longitude)
-                        map.moveCamera(CameraUpdateFactory.newLatLngZoom(userLocation, 15f))
-                        map.addMarker(
-                            MarkerOptions().position(userLocation).title("Your Current Location")
-                        )
-                    } else {
-                        Log.e("MainActivity", "Failed to fetch user location.")
+            try {
+                map.isMyLocationEnabled = true
+                fusedLocationClient.lastLocation
+                    .addOnSuccessListener { location: Location? ->
+                        if (location != null) {
+                            val userLocation = LatLng(location.latitude, location.longitude)
+                            map.moveCamera(CameraUpdateFactory.newLatLngZoom(userLocation, 15f))
+                            map.addMarker(
+                                MarkerOptions().position(userLocation).title("Your Current Location")
+                            )
+                        } else {
+                            Log.e("MainActivity", "Failed to fetch user location.")
+                        }
                     }
-                }
-                .addOnFailureListener { exception ->
-                    Log.e("MainActivity", "Error fetching location", exception)
-                }
+                    .addOnFailureListener { exception ->
+                        Log.e("MainActivity", "Error fetching location", exception)
+                    }
+            } catch (e: SecurityException) {
+                Log.e("MainActivity", "SecurityException: Location permission not granted.", e)
+            }
+        } else {
+            requestLocationPermissions()
         }
     }
+
 
     private fun updateUIForParkingState() {
         val userUID = auth.currentUser?.uid ?: return
