@@ -32,4 +32,6 @@
     <string name="time">HH:mm</string>
     <string name="parking_time">Parking Time</string>
     <string name="parking_image">ParkingImage</string>
+    <string name="location_text">Location: Latitude, Longitude</string>
+    <string name="delete_button">Delete</string>
 </resources>
