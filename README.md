@@ -20,3 +20,5 @@ Aplikasi pengingat lokasi parkir dengan fitur kamera dan GPS yang merekam lokasi
 
 ## Link Video
 
+## Link Google Drive
+https://drive.google.com/file/d/1-HJOr0ThHEA489F4GAczbGavSHrmBuRk/view?usp=sharing
