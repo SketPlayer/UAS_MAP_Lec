@@ -1,6 +1,9 @@
 package com.example.uts_lec
 
+import android.Manifest
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.location.Location
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -12,10 +15,14 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import com.bumptech.glide.Glide
 import com.example.uts_lec.data.firebase.FirebaseHelper
 import com.example.uts_lec.ui.login.LoginActivity
 import com.example.uts_lec.ui.profile.ProfileActivity
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
@@ -42,10 +49,16 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
     private lateinit var parkTimeNum: TextView
     private lateinit var parkImageView: ImageView
 
+    private lateinit var fusedLocationClient: FusedLocationProviderClient
+
     private val firebaseHelper by lazy { FirebaseHelper.getInstance(this) }
     private val auth = FirebaseAuth.getInstance()
     private val firestore = FirebaseFirestore.getInstance()
     private var doubleBackToExitPressedOnce = false // Flag to track double back press
+
+    companion object {
+        private const val REQUEST_LOCATION_PERMISSION = 1001
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -61,6 +74,8 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
         parkDateNum = findViewById(R.id.park_date_num)
         parkTimeNum = findViewById(R.id.park_time_num)
         parkImageView = findViewById(R.id.park_image)
+
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
         // Load the map asynchronously
         mapFragment.getMapAsync(this)
@@ -98,6 +113,34 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
     override fun onMapReady(googleMap: GoogleMap) {
         map = googleMap
         map.uiSettings.isZoomControlsEnabled = true
+
+        // Enable real-time location if permission is granted
+        if (checkLocationPermissions()) {
+            enableRealTimeLocation()
+        } else {
+            requestLocationPermissions()
+        }
+    }
+
+    private fun enableRealTimeLocation() {
+        if (checkLocationPermissions()) {
+            map.isMyLocationEnabled = true
+            fusedLocationClient.lastLocation
+                .addOnSuccessListener { location: Location? ->
+                    if (location != null) {
+                        val userLocation = LatLng(location.latitude, location.longitude)
+                        map.moveCamera(CameraUpdateFactory.newLatLngZoom(userLocation, 15f))
+                        map.addMarker(
+                            MarkerOptions().position(userLocation).title("Your Current Location")
+                        )
+                    } else {
+                        Log.e("MainActivity", "Failed to fetch user location.")
+                    }
+                }
+                .addOnFailureListener { exception ->
+                    Log.e("MainActivity", "Error fetching location", exception)
+                }
+        }
     }
 
     private fun updateUIForParkingState() {
@@ -139,7 +182,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
 
                 if (timestampLong != null) {
                     // Convert the long timestamp to Date
-                    val date = Date(timestampLong) // Convert milliseconds to Date
+                    val date = Date(timestampLong)
 
                     val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
                     val timeFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
@@ -150,11 +193,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
 
                     parkDateNum.text = formattedDate
                     parkTimeNum.text = formattedTime
-
-                    Log.d("UI Update", "Formatted Date: $formattedDate")
-                    Log.d("UI Update", "Formatted Time: $formattedTime")
-                } else {
-                    Log.e("MainActivity", "Timestamp is null")
                 }
 
                 if (latitude != null && longitude != null) {
@@ -179,16 +217,36 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
                 Log.e("MainActivity", "Failed to fetch parking data", exception)
                 Toast.makeText(this, "Failed to load parking location.", Toast.LENGTH_SHORT).show()
             }
-
     }
 
     fun onDoneButtonClick(view: View) {
-        // Show toast message
         Toast.makeText(this, "Parking session ended.", Toast.LENGTH_SHORT).show()
 
-        // Navigate to DoneParkActivity
         val intent = Intent(this, DoneParkActivity::class.java)
         startActivity(intent)
+    }
+
+    private fun checkLocationPermissions(): Boolean {
+        return ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+    }
+
+    private fun requestLocationPermissions() {
+        ActivityCompat.requestPermissions(
+            this,
+            arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
+            REQUEST_LOCATION_PERMISSION
+        )
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == REQUEST_LOCATION_PERMISSION) {
+            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                enableRealTimeLocation()
+            } else {
+                Toast.makeText(this, "Location permission denied", Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 
     override fun onResume() {
@@ -206,7 +264,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
         this.doubleBackToExitPressedOnce = true
         Toast.makeText(this, "Press back again to exit", Toast.LENGTH_SHORT).show()
 
-        // Reset the flag after 2 seconds
         Handler(Looper.getMainLooper()).postDelayed({
             doubleBackToExitPressedOnce = false
         }, 2000)
