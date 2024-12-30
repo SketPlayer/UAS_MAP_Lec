@@ -2,7 +2,7 @@
 
 ## Kelompok 8 ParkTrack
 
-1. Rio Ferdinan
+1. **Rio Ferdinan**
    (00000070666)
 
 2. Dennis Kumara
@@ -19,4 +19,4 @@
 Aplikasi pengingat lokasi parkir dengan fitur kamera dan GPS yang merekam lokasi terakhir agar dapat digunakan ketika parkir
 
 ## Link Video
-https://youtu.be/4numFvpr-bU
+
