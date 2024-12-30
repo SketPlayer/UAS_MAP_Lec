@@ -201,7 +201,7 @@
                 android:id="@+id/park_image"
                 android:layout_width="115dp"
                 android:layout_height="115dp"
-                android:contentDescription="@string/parkingimage"
+                android:contentDescription="@string/parking_image"
                 android:src="@drawable/ic_image"
                 app:layout_constraintTop_toTopOf="@id/parking_date"
                 app:layout_constraintEnd_toEndOf="parent"

@@ -31,5 +31,5 @@
     <string name="parking_date">Parking Date</string>
     <string name="time">HH:mm</string>
     <string name="parking_time">Parking Time</string>
-    <string name="parkingimage">ParkingImage</string>
+    <string name="parking_image">ParkingImage</string>
 </resources>

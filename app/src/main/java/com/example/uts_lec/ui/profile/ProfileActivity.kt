@@ -15,6 +15,7 @@ import com.example.uts_lec.data.model.UserModel
 import com.example.uts_lec.databinding.ActivityProfileBinding
 import com.example.uts_lec.CameraActivity
 import com.example.uts_lec.ui.editprofile.EditProfileActivity
+import com.example.uts_lec.HistoryActivity
 import com.example.uts_lec.MainActivity
 import com.example.uts_lec.ui.splash.SplashActivity
 import com.google.firebase.database.DataSnapshot
@@ -101,6 +102,12 @@ class ProfileActivity : AppCompatActivity() {
                         ActivityResultContracts.PickVisualMedia.ImageOnly
                     )
                 )
+            }
+
+            btnHistory.setOnClickListener {
+                val intent = Intent(this@ProfileActivity, HistoryActivity::class.java)
+                intent.putExtra(EXTRA_UID, extraUID)
+                startActivity(intent)
             }
 
             btnChangeNumber.setOnClickListener {
