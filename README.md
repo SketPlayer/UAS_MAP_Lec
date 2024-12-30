@@ -2,13 +2,13 @@
 
 ## Kelompok 8 ParkTrack
 
-1. **Rio Ferdinan**
+1. **Rio Ferdinan** - SketPlayer
    (00000070666)
 
-2. Dennis Kumara
+2. Dennis Kumara - dennstdent
    (00000074796)
 
-3. Daffi Bintang Firdaus
+3. Daffi Bintang Firdaus - kurangpaham
    (00000073602)
 
 4. Aryasenna Garnadi
