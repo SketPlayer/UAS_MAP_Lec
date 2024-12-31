@@ -15,6 +15,7 @@ import com.example.uts_lec.data.model.UserModel
 import com.example.uts_lec.databinding.ActivityProfileBinding
 import com.example.uts_lec.CameraActivity
 import com.example.uts_lec.ui.editprofile.EditProfileActivity
+import com.example.uts_lec.HistoryActivity
 import com.example.uts_lec.MainActivity
 import com.example.uts_lec.ui.splash.SplashActivity
 import com.google.firebase.database.DataSnapshot
@@ -103,6 +104,12 @@ class ProfileActivity : AppCompatActivity() {
                 )
             }
 
+            btnHistory.setOnClickListener {
+                val intent = Intent(this@ProfileActivity, HistoryActivity::class.java)
+                intent.putExtra(EXTRA_UID, extraUID)
+                startActivity(intent)
+            }
+
             btnChangeNumber.setOnClickListener {
                 val iChangeProfile = Intent(this@ProfileActivity, EditProfileActivity::class.java)
                 iChangeProfile.putExtra(EXTRA_UID, extraUID)
@@ -170,6 +177,15 @@ class ProfileActivity : AppCompatActivity() {
             e.printStackTrace()
             null
         }
+    }
+
+    override fun onBackPressed() {
+        super.onBackPressed()
+        // Navigate to MainActivity when the back button is pressed
+        val intent = Intent(this, MainActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        startActivity(intent)
+        finish()
     }
 
     companion object {

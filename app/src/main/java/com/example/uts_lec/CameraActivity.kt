@@ -202,8 +202,7 @@ class CameraActivity : AppCompatActivity() {
             "imageUrl" to imageUrl,
             "latitude" to latitude,
             "longitude" to longitude,
-            "timestamp" to System.currentTimeMillis(),
-            "active" to true
+            "timestamp" to System.currentTimeMillis()
         )
 
         val parkingRef = firestore.collection("parking_data").document()

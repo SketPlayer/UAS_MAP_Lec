@@ -25,4 +25,13 @@
     <string name="back_to_home">Back to Home</string>
     <string name="parktrack">PARKTRACK</string>
     <string name="track_park_text">Track where you park here</string>
+    <string name="done_button">Done</string>
+    <string name="done_parking">Done parking?</string>
+    <string name="date">DD/MM/yyyy</string>
+    <string name="parking_date">Parking Date</string>
+    <string name="time">HH:mm</string>
+    <string name="parking_time">Parking Time</string>
+    <string name="parking_image">ParkingImage</string>
+    <string name="location_text">Location: Latitude, Longitude</string>
+    <string name="delete_button">Delete</string>
 </resources>

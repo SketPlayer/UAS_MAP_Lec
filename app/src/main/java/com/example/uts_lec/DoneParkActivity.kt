@@ -6,11 +6,18 @@ import android.util.Log
 import android.widget.Button
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import com.example.uts_lec.data.firebase.FirebaseHelper
+import com.example.uts_lec.ui.login.LoginActivity
+import com.example.uts_lec.ui.profile.ProfileActivity
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 
 class DoneParkActivity : AppCompatActivity() {
 
+    private lateinit var bottomNavigationView: BottomNavigationView
+
+    private val firebaseHelper by lazy { FirebaseHelper.getInstance(this) }
     private val auth = FirebaseAuth.getInstance()
     private val firestore = FirebaseFirestore.getInstance()
 
@@ -18,12 +25,44 @@ class DoneParkActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_donepark)
 
+        bottomNavigationView = findViewById(R.id.bottom_navigation_home)
         // Find the back to home button
         val backToHomeButton = findViewById<Button>(R.id.back_to_home_button)
 
         // Set click listener for the button
         backToHomeButton.setOnClickListener {
             resetParkingStateAndNavigateHome()
+        }
+
+        // Handle bottom navigation
+        bottomNavigationView.setOnItemSelectedListener { item ->
+            when (item.itemId) {
+                R.id.nav_home -> {
+                    startActivity(Intent(this, MainActivity::class.java))
+                    true
+                }
+                R.id.nav_camera -> {
+                    resetParkingStateAndNavigateHome()
+                    // Navigate to CameraActivity
+                    startActivity(Intent(this, CameraActivity::class.java))
+                    true
+                }
+                R.id.nav_profile -> {
+                    resetParkingStateAndNavigateHome()
+                    // Handle profile navigation
+                    val user = firebaseHelper.getCurrentUser()
+                    if (user != null) {
+                        val profileIntent = Intent(this, ProfileActivity::class.java)
+                        profileIntent.putExtra(ProfileActivity.EXTRA_UID, user.uid)
+                        startActivity(profileIntent)
+                    } else {
+                        Toast.makeText(this, "Please log in to access your profile.", Toast.LENGTH_SHORT).show()
+                        startActivity(Intent(this, LoginActivity::class.java))
+                    }
+                    true
+                }
+                else -> false
+            }
         }
     }
 
