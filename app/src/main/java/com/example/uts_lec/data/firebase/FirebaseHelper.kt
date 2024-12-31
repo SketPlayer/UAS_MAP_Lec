@@ -28,28 +28,36 @@ class FirebaseHelper {
     fun register(userModel: UserModel) = flow {
         emit(Result.Loading)
         try {
-            val user = suspendCoroutine { continuation ->
+            val result = suspendCoroutine<Pair<Boolean, String>> { continuation ->
                 auth.createUserWithEmailAndPassword(userModel.email, userModel.password)
                     .addOnCompleteListener { task ->
                         if (task.isSuccessful) {
                             val user = auth.currentUser
-                            auth.signOut()
-
                             user?.let {
-                                database.child(user.uid).setValue(userModel)
+                                database.child(it.uid).setValue(userModel)
                                     .addOnSuccessListener {
                                         user.sendEmailVerification()
                                         continuation.resume(true to "Successfully Created Account!")
                                     }
-                                    .addOnFailureListener { e -> continuation.resume(false to "Error: ${e.message}") }
-                            }
-
+                                    .addOnFailureListener { e ->
+                                        continuation.resume(false to "Error: ${e.message}")
+                                    }
+                            } ?: continuation.resume(false to "User is null after registration.")
                         } else {
-                            continuation.resumeWithException(Exception("Register Failed"))
+                            continuation.resume(false to "Register Failed: ${task.exception?.message}")
                         }
                     }
+                    .addOnFailureListener { e ->
+                        continuation.resume(false to "Exception: ${e.message}")
+                    }
             }
-            emit(Result.Success(user))
+
+            if (result.first) {
+                emit(Result.Success(result))
+            } else {
+                emit(Result.Error(result.second))
+            }
+
         } catch (e: Exception) {
             emit(Result.Error(e.message.toString()))
         }

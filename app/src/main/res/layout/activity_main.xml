@@ -91,6 +91,7 @@
     <!-- CardView Wrapping Map Fragment and Done Button -->
     <androidx.cardview.widget.CardView
         android:id="@+id/map_card"
+
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="16dp"
